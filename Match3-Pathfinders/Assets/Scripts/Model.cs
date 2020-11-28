@@ -19,12 +19,16 @@ public class Model : MonoBehaviour
         {
             for (int j = 0; j < sizeY; j++)
             {
-                SetGridValue(i,j, true);
+                SetGridValue(i,j);
             }
         }
     }
-
-    public void CheckForCombinations(char axis)
+     /// <summary>
+     /// Returns true if there are combinations
+     /// </summary>
+     /// <param name="axis"></param>
+     /// <returns></returns>
+    public bool CheckForCombinations(char axis)
     {
         int lastToken = -1;
         int count = 1;
@@ -107,18 +111,66 @@ public class Model : MonoBehaviour
                 lastToken = -1;
             }
         }
+
+        return CheckThereAreNoEmptyTokens();
     }
 
-    void SetGridValue(int x, int y, bool random = false)
+    /// <summary>
+    /// Returns true if there are no empty tokens
+    /// </summary>
+    /// <returns></returns>
+    bool CheckThereAreNoEmptyTokens()
     {
-        if (random)
+        for (int i = 0; i < sizeX; i++)
         {
-            grid[x, y] = Random.Range(0, AmountOfTokens);
+            for (int j = 0; j < sizeY; j++)
+            {
+                if (grid[i, j] == -1)
+                    return false;
+            }
         }
-        else
+
+        return true;
+    }
+
+    public void PullDownTokens()
+    {
+        for (int i = sizeX - 1; i >= 0; i--)
         {
-            grid[x, y] = grid[x, y + 1];
+            for (int j = sizeY - 1; j >= 0; j--)
+            {
+                if (grid[i, j] == -1)
+                {
+                    int thisToken = grid[i, j];
+                    int k = j;
+                    while (thisToken == -1)
+                    {
+                        k--;
+                        if (k < 0)
+                            break;
+                        thisToken = grid[i, k];
+                    }
+
+                    if (k < 0)
+                    {
+                        for (k = j; k >= 0; k--)
+                        {
+                            SetGridValue(i, k);
+                        }
+
+                        continue;
+                    }
+
+                    grid[i, j] = grid[i, k];
+                    grid[i, k] = -1;
+                }
+            }
         }
+    }
+
+    void SetGridValue(int x, int y)
+    {
+        grid[x, y] = Random.Range(0, AmountOfTokens);
     }
 
     // Update is called once per frame

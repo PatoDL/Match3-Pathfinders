@@ -24,8 +24,11 @@ public class Controller : MonoBehaviour
     void Start()
     {
         int maxX = 0, maxY = 0;
-        model.CheckForCombinations('x');
-        model.CheckForCombinations('y');
+        while (!model.CheckForCombinations('x') || !model.CheckForCombinations('y'))
+        {
+            model.PullDownTokens();
+        }
+        
         int[,] grid = model.GetGrid(ref maxX, ref maxY);
         RenderGrid(grid, maxX, maxY);
         Vector3 cameraPosition = Camera.main.gameObject.transform.position;
