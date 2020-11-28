@@ -24,6 +24,91 @@ public class Model : MonoBehaviour
         }
     }
 
+    public void CheckForCombinations(char axis)
+    {
+        int lastToken = -1;
+        int count = 1;
+
+        if (axis == 'y')
+        {
+            for (int i = 0; i < sizeX; i++)
+            {
+                int j = 0;
+                for (; j < sizeY; j++)
+                {
+                    if (grid[i, j] == -1)
+                        continue;
+
+                    if (grid[i, j] == lastToken)
+                    {
+                        count++;
+                    }
+                    else
+                    {
+                        if (count >= 3)
+                        {
+                            for (int k = 1; k <= count; k++)
+                            {
+                                grid[i, j - k] = -1;
+                            }
+                        }
+                        count = 1;
+                    }
+
+                    lastToken = grid[i, j];
+                }
+                if (count >= 3)
+                {
+                    for (int k = 1; k <= count; k++)
+                    {
+                        grid[i, j - k] = -1;
+                    }
+                }
+                count = 1;
+                lastToken = -1;
+            }
+        }
+        else if (axis == 'x')
+        {
+            for (int j = 0; j < sizeY; j++)
+            {
+                int i = 0;
+                for (; i < sizeX; i++)
+                {
+                    if (grid[i, j] == -1)
+                        continue;
+
+                    if (grid[i, j] == lastToken)
+                    {
+                        count++;
+                    }
+                    else
+                    { 
+                        if (count >= 3)
+                        {
+                            for (int k = 1; k <= count; k++)
+                            {
+                                grid[i - k, j] = -1;
+                            }
+                        }
+                        count = 1;
+                    }
+
+                    lastToken = grid[i, j];
+                }
+                if (count >= 3)
+                {
+                    for (int k = 1; k <= count; k++)
+                    {
+                        grid[i - k, j] = -1;
+                    }
+                }
+                count = 1;
+                lastToken = -1;
+            }
+        }
+    }
+
     void SetGridValue(int x, int y, bool random = false)
     {
         if (random)

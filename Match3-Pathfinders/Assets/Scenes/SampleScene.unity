@@ -377,8 +377,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: eecc838b2e60bf74cb7490f4a474e2cd, type: 3}
   - {fileID: 21300000, guid: 93c12d92ebc01164a9e39c326353c421, type: 3}
   - {fileID: 21300000, guid: a4bac3c9bbb1d2b449b73db8455259fa, type: 3}
-  offsetX: 1.5
-  offsetY: 1.5
+  colliderSize: {x: 1.5, y: 1.5}
 --- !u!4 &1064120435
 Transform:
   m_ObjectHideFlags: 0
@@ -424,6 +423,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   view: {fileID: 1064120434}
   model: {fileID: 266288136}
+  tokenOffset: {x: 1.5, y: 1.5}
 --- !u!4 &1472797403
 Transform:
   m_ObjectHideFlags: 0

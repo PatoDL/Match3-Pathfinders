@@ -5,15 +5,14 @@ using UnityEngine;
 public class View : MonoBehaviour
 {
     [SerializeField] private List<Sprite> spriteList;
-    [SerializeField] private float offsetX;
-    [SerializeField] private float offsetY;
+    [SerializeField] private Vector2 colliderSize;
 
     public void RenderGrid(int item, Vector3 position)
     {
         SpriteRenderer spriteRenderer = new GameObject().AddComponent<SpriteRenderer>();
-        spriteRenderer.sprite = spriteList[item];
-        position.x *= offsetX;
-        position.y *= offsetY;
+        BoxCollider2D boxCollider2D = spriteRenderer.gameObject.AddComponent<BoxCollider2D>();
+        boxCollider2D.size = new Vector2(colliderSize.x, colliderSize.y);
+        spriteRenderer.sprite = item > -1 ? spriteList[item] : null;
         spriteRenderer.transform.position = position;
     }
 
