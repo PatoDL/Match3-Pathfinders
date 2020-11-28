@@ -24,6 +24,7 @@ public class Controller : MonoBehaviour
     void Start()
     {
         int maxX = 0, maxY = 0;
+
         while (!model.CheckForCombinations('x') || !model.CheckForCombinations('y'))
         {
             model.PullDownTokens();
@@ -37,17 +38,29 @@ public class Controller : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
+
+        RaycastHit2D raycastHit2D = Physics2D.Raycast(mousePosition2D, Vector2.zero);
+
+        if (raycastHit2D.collider != null && raycastHit2D.collider.tag == "Token")
         {
-            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
-
-            RaycastHit2D raycastHit2D = Physics2D.Raycast(mousePosition2D, Vector2.zero);
-
-            if (raycastHit2D.collider != null)
+            view.SelectToken(raycastHit2D.transform.gameObject);
+            if (Input.GetMouseButton(0))
             {
-                Debug.Log(raycastHit2D.transform.position);
+                int xPos = 0, yPos = 0;
+                model.GetGameObjectGridPosition(raycastHit2D.transform.gameObject, ref xPos, ref yPos, tokenOffset);
+                bool wasTokenSelected = model.SelectToken(xPos, yPos);
+                if (wasTokenSelected)
+                {
+                    Vector3 position = raycastHit2D.transform.gameObject.transform.position;
+                    position.z = -1;
+                    view.AddLinePosition(position);
+                }
             }
         }
+
+        
     }
 }

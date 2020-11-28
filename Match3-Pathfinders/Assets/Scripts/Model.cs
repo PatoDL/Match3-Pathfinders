@@ -11,18 +11,25 @@ public class Model : MonoBehaviour
 
     [SerializeField] private int AmountOfTokens;
 
+    [HideInInspector] public List<Vector2> selectedTokens;
+    [HideInInspector] public GameObject onMouseToken;
+
+    [SerializeField] private int minTokenAmountCombination;
+
     // Start is called before the first frame update
     void Start()
     {
+        selectedTokens = new List<Vector2>();
         grid = new int[sizeX, sizeY];
         for (int i = 0; i < sizeX; i++)
         {
             for (int j = 0; j < sizeY; j++)
             {
-                SetGridValue(i,j);
+                SetRandomGridValue(i,j);
             }
         }
     }
+
      /// <summary>
      /// Returns true if there are combinations
      /// </summary>
@@ -155,7 +162,7 @@ public class Model : MonoBehaviour
                     {
                         for (k = j; k >= 0; k--)
                         {
-                            SetGridValue(i, k);
+                            SetRandomGridValue(i, k);
                         }
 
                         continue;
@@ -168,7 +175,59 @@ public class Model : MonoBehaviour
         }
     }
 
-    void SetGridValue(int x, int y)
+    public void GetGameObjectGridPosition(GameObject tokenGameObject, ref int x, ref int y, Vector2 offset)
+    {
+        Vector2 position = tokenGameObject.transform.position;
+        x = (int)(position.x / offset.x);
+        y = (int)(position.y / offset.y);
+    }
+
+    bool CheckValidTokenPosition(int x, int y)
+    {
+        if (selectedTokens.Count <= 0)
+            return true;
+
+        Vector2 lastTokenPosition = selectedTokens[selectedTokens.Count - 1];
+
+        bool xAdjacent = (y == lastTokenPosition.y && (x == lastTokenPosition.x + 1 || x == lastTokenPosition.x - 1));
+        bool yAdjacent = (x == lastTokenPosition.x && (y == lastTokenPosition.y + 1 || y == lastTokenPosition.y - 1));
+
+        if ((xAdjacent && !yAdjacent) || (yAdjacent && !xAdjacent))
+            return true;
+
+        return false;
+    }
+
+    //bool CheckValidTokenValue(int x, int y)
+    //{
+    //    foreach (Vector2 token in selectedTokens)
+    //    {
+    //        bool xAdjacent = (y == token.y && (x == token.x + 1 || x == token.x - 1));
+    //        bool yAdjacent = (x == token.x && (y == token.y + 1 || y == token.y - 1));
+
+    //        if ((xAdjacent && !yAdjacent) || (yAdjacent && !xAdjacent))
+    //            return true;
+    //    }
+    //}
+
+    /// <summary>
+    /// Returns true if the token could be selected
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public bool SelectToken(int x, int y)
+    {
+        if (CheckValidTokenPosition(x, y))
+        {
+            selectedTokens.Add(new Vector2(x, y));
+            return true;
+        }
+
+        return false;
+    }
+
+    void SetRandomGridValue(int x, int y)
     {
         grid[x, y] = Random.Range(0, AmountOfTokens);
     }
