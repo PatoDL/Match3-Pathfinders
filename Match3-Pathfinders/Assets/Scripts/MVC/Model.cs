@@ -21,11 +21,16 @@ public class Model : MonoBehaviour
     {
         selectedTokens = new List<Vector2>();
         grid = new int[sizeX, sizeY];
+        CreateNewGrid();
+    }
+
+    public void CreateNewGrid()
+    {
         for (int i = 0; i < sizeX; i++)
         {
             for (int j = 0; j < sizeY; j++)
             {
-                SetRandomGridValue(i,j);
+                SetRandomGridValue(i, j);
             }
         }
     }
@@ -33,9 +38,7 @@ public class Model : MonoBehaviour
      /// <summary>
      /// Returns true if there are combinations
      /// </summary>
-     /// <param name="axis"></param>
-     /// <returns></returns>
-    public bool CheckForCombinations(char axis)
+    public bool CheckForCombinations(char axis, ref int scoreToAdd)
     {
         int lastToken = -1;
         int count = 1;
@@ -61,6 +64,7 @@ public class Model : MonoBehaviour
                             for (int k = 1; k <= count; k++)
                             {
                                 grid[i, j - k] = -1;
+                                scoreToAdd++;
                             }
                         }
                         count = 1;
@@ -73,6 +77,7 @@ public class Model : MonoBehaviour
                     for (int k = 1; k <= count; k++)
                     {
                         grid[i, j - k] = -1;
+                        scoreToAdd++;
                     }
                 }
                 count = 1;
@@ -100,6 +105,7 @@ public class Model : MonoBehaviour
                             for (int k = 1; k <= count; k++)
                             {
                                 grid[i - k, j] = -1;
+                                scoreToAdd++;
                             }
                         }
                         count = 1;
@@ -112,6 +118,7 @@ public class Model : MonoBehaviour
                     for (int k = 1; k <= count; k++)
                     {
                         grid[i - k, j] = -1;
+                        scoreToAdd++;
                     }
                 }
                 count = 1;
@@ -125,7 +132,6 @@ public class Model : MonoBehaviour
     /// <summary>
     /// Returns true if there are no empty tokens
     /// </summary>
-    /// <returns></returns>
     public bool CheckThereAreNoEmptyTokens()
     {
         for (int i = 0; i < sizeX; i++)
@@ -192,9 +198,6 @@ public class Model : MonoBehaviour
     /// <summary>
     /// returns true if token wasn't selected yet
     /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <returns></returns>
     bool CheckTokenAlreadySelected(int x, int y)
     {
         if (selectedTokens.Count <= 0)
@@ -243,9 +246,6 @@ public class Model : MonoBehaviour
     /// <summary>
     /// Returns true if the token could be selected
     /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <returns></returns>
     public bool SelectToken(int x, int y)
     {
         if (CheckValidTokenPosition(x, y) && CheckValidTokenValue(x, y) && CheckTokenAlreadySelected(x,y))
@@ -257,20 +257,25 @@ public class Model : MonoBehaviour
         return false;
     }
 
-    public bool ExplodeChain()
+
+    /// <summary>
+    /// Returns the score that should be added to the actual game score. 
+    /// Exploded returns true if the combination chain was up to 2 tokens
+    public int ExplodeChain(ref bool exploded)
     {
-        bool exploded = false;
+        int scoreToAdd = 0;
         if(selectedTokens.Count >= 3)
         {
             foreach (Vector2 tokenPosition in selectedTokens)
             {
                 grid[(int)tokenPosition.x, (int)tokenPosition.y] = -1;
+                scoreToAdd++;
             }
             exploded = true;
             selectedTokens.Clear();
         }
 
-        return exploded;
+        return scoreToAdd;
     }
 
     void SetRandomGridValue(int x, int y)

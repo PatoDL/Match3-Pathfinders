@@ -10,6 +10,16 @@ public class Controller : MonoBehaviour
 
     [SerializeField] private Vector2 tokenOffset;
 
+    [SerializeField] private int score;
+
+    [SerializeField] private int turnsLeft;
+    private int turnsLeftHandler;
+
+    public delegate void OnIntValueUpdate(int newInt);
+
+    public OnIntValueUpdate UpdateScore;
+    public OnIntValueUpdate UpdateTurnsLeft;
+
     private GameObject actualSelectedToken;
 
     enum Game_Phase
@@ -21,14 +31,12 @@ public class Controller : MonoBehaviour
 
     Game_Phase game_phase;
 
-    
-
     void Start()
     {
-        while (!model.CheckForCombinations('x') || !model.CheckForCombinations('y'))
-        {
-            model.PullDownTokens();
-        }
+        turnsLeftHandler = turnsLeft;
+
+        RestartGame();
+
         int maxX = 0, maxY = 0;
         int[,] grid = model.GetGrid(ref maxX, ref maxY);
         view.CreateGrid(grid, maxX, maxY, tokenOffset);
@@ -100,10 +108,16 @@ public class Controller : MonoBehaviour
                             {
                                 view.DeselectToken((int)tokenPosition.x, (int)tokenPosition.y);
                             }
-                            bool exploded = model.ExplodeChain();
+
+                            bool exploded = false;
+                            score += model.ExplodeChain(ref exploded);
+                            UpdateScore(score);
+
                             if(exploded)
                             {   
                                 game_phase = Game_Phase.EXPLODING;
+                                turnsLeft--;
+                                UpdateTurnsLeft(turnsLeft);
                             }
                             else
                             {
@@ -126,20 +140,42 @@ public class Controller : MonoBehaviour
                             model.PullDownTokens();
                         }
 
-                        while (!model.CheckForCombinations('x') || !model.CheckForCombinations('y'))
+                        int scoreToAdd = 0;
+                        while (!model.CheckForCombinations('x', ref scoreToAdd) || !model.CheckForCombinations('y', ref scoreToAdd))
                         {
                             model.PullDownTokens();
                         }
+                        score += scoreToAdd;
+                        UpdateScore(score);
+
+                        if (turnsLeft <= 0)
+                            RestartGame();
 
                         int maxX = 0, maxY = 0;
                         int[,] grid = model.GetGrid(ref maxX, ref maxY);
 
                         view.SwitchGrid(grid, maxX, maxY);
 
+
                         game_phase = Game_Phase.WONDERING;
                     }
                     break;
             }
+        }
+    }
+
+    private void RestartGame()
+    {
+        model.CreateNewGrid();
+        score = 0;
+        UpdateScore(score);
+        turnsLeft = turnsLeftHandler;
+        UpdateTurnsLeft(turnsLeft);
+
+        int neededIntReference = 0;
+        while (!model.CheckForCombinations('x', ref neededIntReference) || !model.CheckForCombinations('y', ref neededIntReference))
+        {
+            model.PullDownTokens();
         }
     }
 }
