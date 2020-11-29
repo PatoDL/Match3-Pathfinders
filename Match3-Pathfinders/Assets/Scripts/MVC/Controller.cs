@@ -40,6 +40,8 @@ public class Controller : MonoBehaviour
         int maxX = 0, maxY = 0;
         int[,] grid = model.GetGrid(ref maxX, ref maxY);
         view.CreateGrid(grid, maxX, maxY, tokenOffset);
+        Camera.main.orthographicSize *= Mathf.Max(maxX, maxY);
+        Camera.main.orthographicSize /= 10;
         Vector3 cameraPosition = Camera.main.gameObject.transform.position;
         Camera.main.gameObject.transform.position = new Vector3(maxX * tokenOffset.x / 2, maxY * tokenOffset.y / 2, cameraPosition.z);
         game_phase = Game_Phase.WONDERING;

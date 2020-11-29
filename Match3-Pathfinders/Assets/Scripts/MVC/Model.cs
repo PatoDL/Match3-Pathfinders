@@ -59,7 +59,7 @@ public class Model : MonoBehaviour
                     }
                     else
                     {
-                        if (count >= 3)
+                        if (count >= minTokenAmountCombination)
                         {
                             for (int k = 1; k <= count; k++)
                             {
@@ -72,7 +72,7 @@ public class Model : MonoBehaviour
 
                     lastToken = grid[i, j];
                 }
-                if (count >= 3)
+                if (count >= minTokenAmountCombination)
                 {
                     for (int k = 1; k <= count; k++)
                     {
@@ -100,7 +100,7 @@ public class Model : MonoBehaviour
                     }
                     else
                     { 
-                        if (count >= 3)
+                        if (count >= minTokenAmountCombination)
                         {
                             for (int k = 1; k <= count; k++)
                             {
@@ -113,7 +113,7 @@ public class Model : MonoBehaviour
 
                     lastToken = grid[i, j];
                 }
-                if (count >= 3)
+                if (count >= minTokenAmountCombination)
                 {
                     for (int k = 1; k <= count; k++)
                     {
@@ -203,6 +203,8 @@ public class Model : MonoBehaviour
         if (selectedTokens.Count <= 0)
             return true;
 
+
+
         foreach(Vector2 tokenPosition in selectedTokens)
         {
             if (tokenPosition.x == x && tokenPosition.y == y)
@@ -264,7 +266,7 @@ public class Model : MonoBehaviour
     public int ExplodeChain(ref bool exploded)
     {
         int scoreToAdd = 0;
-        if(selectedTokens.Count >= 3)
+        if(selectedTokens.Count >= minTokenAmountCombination)
         {
             foreach (Vector2 tokenPosition in selectedTokens)
             {
