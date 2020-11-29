@@ -187,6 +187,28 @@ public class Model : MonoBehaviour
         y = (int)(position.y / offset.y);
     }
 
+
+
+    /// <summary>
+    /// returns true if token wasn't selected yet
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    bool CheckTokenAlreadySelected(int x, int y)
+    {
+        if (selectedTokens.Count <= 0)
+            return true;
+
+        foreach(Vector2 tokenPosition in selectedTokens)
+        {
+            if (tokenPosition.x == x && tokenPosition.y == y)
+                return false;
+        }
+
+        return true;
+    }
+
     bool CheckValidTokenPosition(int x, int y)
     {
         if (selectedTokens.Count <= 0)
@@ -226,7 +248,7 @@ public class Model : MonoBehaviour
     /// <returns></returns>
     public bool SelectToken(int x, int y)
     {
-        if (CheckValidTokenPosition(x, y) && CheckValidTokenValue(x, y))
+        if (CheckValidTokenPosition(x, y) && CheckValidTokenValue(x, y) && CheckTokenAlreadySelected(x,y))
         {
             selectedTokens.Add(new Vector2(x, y));
             return true;
