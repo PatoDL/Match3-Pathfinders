@@ -235,14 +235,20 @@ public class Model : MonoBehaviour
         return false;
     }
 
-    public void ExplodeChain()
+    public bool ExplodeChain()
     {
-        foreach(Vector2 tokenPosition in selectedTokens)
+        bool exploded = false;
+        if(selectedTokens.Count >= 3)
         {
-            grid[(int)tokenPosition.x, (int)tokenPosition.y] = -1;
+            foreach (Vector2 tokenPosition in selectedTokens)
+            {
+                grid[(int)tokenPosition.x, (int)tokenPosition.y] = -1;
+            }
+            exploded = true;
+            selectedTokens.Clear();
         }
 
-        selectedTokens.Clear();
+        return exploded;
     }
 
     void SetRandomGridValue(int x, int y)

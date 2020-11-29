@@ -95,6 +95,19 @@ public class View : MonoBehaviour
             animator.SetBool("MouseEnter", false);
     }
 
+    public void MarkError(int x, int y)
+    {
+        viewGrid[x, y].GetComponent<SpriteRenderer>().material.color = Color.red;
+        StartCoroutine(BackToItsOriginalColor(x, y));
+       
+    }
+
+    IEnumerator BackToItsOriginalColor(int x, int y)
+    {
+        yield return new WaitForSeconds(0.3f);
+        viewGrid[x, y].GetComponent<SpriteRenderer>().material.color = Color.white;
+    }
+
     public void ResetLineRenderer()
     {
         lineRenderer.positionCount = 0;

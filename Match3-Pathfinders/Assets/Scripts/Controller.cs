@@ -100,9 +100,22 @@ public class Controller : MonoBehaviour
                             {
                                 view.DeselectToken((int)tokenPosition.x, (int)tokenPosition.y);
                             }
-                            model.ExplodeChain();
+                            bool exploded = model.ExplodeChain();
+                            if(exploded)
+                            {   
+                                game_phase = Game_Phase.EXPLODING;
+                            }
+                            else
+                            {
+                                foreach (Vector2 tokenPosition in model.selectedTokens)
+                                {
+                                    view.MarkError((int)tokenPosition.x, (int)tokenPosition.y);
+                                }
+
+                                model.selectedTokens.Clear();
+                                game_phase = Game_Phase.WONDERING;
+                            }
                             view.ResetLineRenderer();
-                            game_phase = Game_Phase.EXPLODING;
                         }
                     }
                     break;
