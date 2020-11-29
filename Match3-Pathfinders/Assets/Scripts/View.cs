@@ -11,7 +11,9 @@ public class View : MonoBehaviour
     [SerializeField] private RuntimeAnimatorController animatorController;
     private LineRenderer lineRenderer;
 
-    public void RenderGrid(int item, Vector3 position)
+    GameObject[,] viewGrid;
+
+    public GameObject CreateGridItem(int item, Vector3 position)
     {
         SpriteRenderer spriteRenderer = new GameObject().AddComponent<SpriteRenderer>();
         BoxCollider2D boxCollider2D = spriteRenderer.gameObject.AddComponent<BoxCollider2D>();
@@ -25,6 +27,39 @@ public class View : MonoBehaviour
 
         spriteRenderer.gameObject.tag = "Token";
         spriteRenderer.gameObject.transform.parent = tokensParent;
+
+        return spriteRenderer.gameObject;
+    }
+
+    public void CreateGrid(int[,] grid, int xMax, int yMax, Vector2 tokenOffset)
+    {
+        viewGrid = new GameObject[xMax, yMax];
+        for (int i = 0; i < xMax; i++)
+        {
+            for (int j = 0; j < yMax; j++)
+            {
+                viewGrid[i, j] = CreateGridItem(grid[i, j], new Vector3(i * tokenOffset.x, j * tokenOffset.y));
+            }
+        }
+    }
+
+    public void SwitchGridItem(int x, int y, int item)
+    {
+        if (item > -1)
+            viewGrid[x, y].GetComponent<SpriteRenderer>().sprite = spriteList[item];
+        else
+            viewGrid[x, y].GetComponent<SpriteRenderer>().sprite = null;
+    }
+
+    public void SwitchGrid(int[,] grid, int xMax, int yMax)
+    {
+        for (int i = 0; i < xMax; i++)
+        {
+            for (int j = 0; j < yMax; j++)
+            {
+                SwitchGridItem(i, j, grid[i, j]);
+            }
+        }
     }
 
     public void AddLinePosition(Vector3 position)
@@ -53,9 +88,23 @@ public class View : MonoBehaviour
             animator.SetBool("MouseEnter", false);
     }
 
+    internal void DeselectToken(int x, int y)
+    {
+        Animator animator = viewGrid[x, y].GetComponent<Animator>();
+        if (animator.GetBool("MouseEnter"))
+            animator.SetBool("MouseEnter", false);
+    }
+
+    public void ResetLineRenderer()
+    {
+        lineRenderer.positionCount = 0;
+    }
+
     // Update is called once per frame
     void Update()
     {
         
     }
+
+    
 }

@@ -126,7 +126,7 @@ public class Model : MonoBehaviour
     /// Returns true if there are no empty tokens
     /// </summary>
     /// <returns></returns>
-    bool CheckThereAreNoEmptyTokens()
+    public bool CheckThereAreNoEmptyTokens()
     {
         for (int i = 0; i < sizeX; i++)
         {
@@ -140,27 +140,32 @@ public class Model : MonoBehaviour
         return true;
     }
 
+    public int GetGridValueByPosition(int x, int y)
+    {
+        return grid[x, y];
+    }
+
     public void PullDownTokens()
     {
-        for (int i = sizeX - 1; i >= 0; i--)
+        for(int i=0;i<sizeX;i++)
         {
-            for (int j = sizeY - 1; j >= 0; j--)
+            for(int j=0;j<sizeY;j++)
             {
-                if (grid[i, j] == -1)
+                if(grid[i,j] == -1)
                 {
                     int thisToken = grid[i, j];
                     int k = j;
                     while (thisToken == -1)
                     {
-                        k--;
-                        if (k < 0)
+                        k++;
+                        if (k == sizeY)
                             break;
                         thisToken = grid[i, k];
                     }
 
-                    if (k < 0)
+                    if (k ==sizeY)
                     {
-                        for (k = j; k >= 0; k--)
+                        for (k = j; k < sizeY; k++)
                         {
                             SetRandomGridValue(i, k);
                         }
@@ -228,6 +233,16 @@ public class Model : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void ExplodeChain()
+    {
+        foreach(Vector2 tokenPosition in selectedTokens)
+        {
+            grid[(int)tokenPosition.x, (int)tokenPosition.y] = -1;
+        }
+
+        selectedTokens.Clear();
     }
 
     void SetRandomGridValue(int x, int y)
