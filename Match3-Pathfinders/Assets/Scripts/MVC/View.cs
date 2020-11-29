@@ -68,6 +68,11 @@ public class View : MonoBehaviour
         lineRenderer.SetPosition(lineRenderer.positionCount-1, position);
     }
 
+    public void RemoveLinePosition()
+    {
+        lineRenderer.positionCount--;
+    }
+
     public void SelectToken(GameObject token)
     {
         Animator animator = token.GetComponent<Animator>();

@@ -193,17 +193,31 @@ public class Model : MonoBehaviour
         y = (int)(position.y / offset.y);
     }
 
+    public bool CheckTokenSelectionGoingBackwards(int x, int y, ref Vector2 toRemove)
+    {
+        if (selectedTokens.Count <= 1)
+            return false;
 
+        Vector2 positionAux = selectedTokens[selectedTokens.Count - 2];
+
+        if (positionAux.x == x && positionAux.y == y)
+        {
+            toRemove = selectedTokens[selectedTokens.Count - 1];
+            selectedTokens.RemoveAt(selectedTokens.Count - 1);
+            return true;
+        }
+        return false;
+    }
 
     /// <summary>
     /// returns true if token wasn't selected yet
     /// </summary>
-    bool CheckTokenAlreadySelected(int x, int y)
+    public bool CheckTokenAlreadySelected(int x, int y)
     {
         if (selectedTokens.Count <= 0)
             return true;
 
-
+        
 
         foreach(Vector2 tokenPosition in selectedTokens)
         {

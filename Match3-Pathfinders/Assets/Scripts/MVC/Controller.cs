@@ -96,12 +96,26 @@ public class Controller : MonoBehaviour
                         int xPos = 0, yPos = 0;
                         model.GetGameObjectGridPosition(actualSelectedToken, ref xPos, ref yPos, tokenOffset);
                         bool wasTokenSelected = model.SelectToken(xPos, yPos);
+
+                        
+
                         if (wasTokenSelected)
                         {
                             view.SelectToken(actualSelectedToken);
                             Vector3 position = raycastHit2D.transform.gameObject.transform.position;
                             position.z = -1;
                             view.AddLinePosition(position);
+                        }
+                        else
+                        {
+                            Vector2 toRemove = Vector2.zero;
+                            bool goingBackwards = model.CheckTokenSelectionGoingBackwards(xPos, yPos, ref toRemove);
+
+                            if (goingBackwards)
+                            {
+                                view.DeselectToken((int)toRemove.x, (int)toRemove.y);
+                                view.RemoveLinePosition();
+                            }
                         }
 
                         if (Input.GetMouseButtonUp(0))
