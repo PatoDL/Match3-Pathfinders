@@ -198,17 +198,20 @@ public class Model : MonoBehaviour
         return false;
     }
 
-    //bool CheckValidTokenValue(int x, int y)
-    //{
-    //    foreach (Vector2 token in selectedTokens)
-    //    {
-    //        bool xAdjacent = (y == token.y && (x == token.x + 1 || x == token.x - 1));
-    //        bool yAdjacent = (x == token.x && (y == token.y + 1 || y == token.y - 1));
+    bool CheckValidTokenValue(int x, int y)
+    {
+        if (selectedTokens.Count <= 0)
+            return true;
 
-    //        if ((xAdjacent && !yAdjacent) || (yAdjacent && !xAdjacent))
-    //            return true;
-    //    }
-    //}
+        Vector2 lastTokenPosition = selectedTokens[selectedTokens.Count - 1];
+
+        if(grid[x, y] == grid[(int)lastTokenPosition.x, (int)lastTokenPosition.y])
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Returns true if the token could be selected
@@ -218,7 +221,7 @@ public class Model : MonoBehaviour
     /// <returns></returns>
     public bool SelectToken(int x, int y)
     {
-        if (CheckValidTokenPosition(x, y))
+        if (CheckValidTokenPosition(x, y) && CheckValidTokenValue(x, y))
         {
             selectedTokens.Add(new Vector2(x, y));
             return true;

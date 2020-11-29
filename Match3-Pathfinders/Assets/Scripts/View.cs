@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -43,6 +44,13 @@ public class View : MonoBehaviour
     void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
+    }
+
+    internal void DeselectToken(GameObject token)
+    {
+        Animator animator = token.GetComponent<Animator>();
+        if (animator.GetBool("MouseEnter"))
+            animator.SetBool("MouseEnter", false);
     }
 
     // Update is called once per frame
