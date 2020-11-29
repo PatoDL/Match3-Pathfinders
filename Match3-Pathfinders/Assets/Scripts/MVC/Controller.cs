@@ -43,7 +43,7 @@ public class Controller : MonoBehaviour
         Camera.main.orthographicSize *= Mathf.Max(maxX, maxY);
         Camera.main.orthographicSize /= 10;
         Vector3 cameraPosition = Camera.main.gameObject.transform.position;
-        Camera.main.gameObject.transform.position = new Vector3(maxX * tokenOffset.x / 2, maxY * tokenOffset.y / 2, cameraPosition.z);
+        Camera.main.gameObject.transform.position = new Vector3((maxX-1) * tokenOffset.x / 2, (maxY - 1) * tokenOffset.y / 2, cameraPosition.z);
         game_phase = Game_Phase.WONDERING;
     }
 
