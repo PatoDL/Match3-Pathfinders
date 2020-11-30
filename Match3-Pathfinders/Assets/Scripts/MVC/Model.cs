@@ -16,6 +16,8 @@ public class Model : MonoBehaviour
 
     [SerializeField] private int minTokenAmountCombination;
 
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -33,6 +35,50 @@ public class Model : MonoBehaviour
                 SetRandomGridValue(i, j);
             }
         }
+    }
+
+    public bool CheckForAvailableMoves()
+    {
+        for(int i = 0; i < sizeX; i++)
+        {
+            for(int j = 0; j < sizeY; j++)
+            {
+                int adjacentCount = 0;
+
+                if(i > 0)
+                {
+                    bool hasLeftAdjacent = grid[i, j] == grid[i - 1, j];
+                    if (hasLeftAdjacent)
+                        adjacentCount++;
+                }
+
+                if(i < sizeX - 1)
+                {
+                    bool hasRightAdjacent = grid[i, j] == grid[i + 1, j];
+                    if (hasRightAdjacent)
+                        adjacentCount++;
+                }
+
+                if(j > 0)
+                {
+                    bool hasDownAdjacent = grid[i, j] == grid[i, j - 1];
+                    if (hasDownAdjacent)
+                        adjacentCount++;
+                }
+
+                if(j < sizeY - 1)
+                {
+                    bool hasUpAdjacent = grid[i, j] == grid[i, j + 1];
+                    if (hasUpAdjacent)
+                        adjacentCount++;
+                }
+
+                if (adjacentCount > 1)
+                    return true;
+            }
+        }
+
+        return false;
     }
 
      /// <summary>

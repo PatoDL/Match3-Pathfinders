@@ -62,6 +62,12 @@ public class Controller : MonoBehaviour
 
         RaycastHit2D raycastHit2D = Physics2D.Raycast(mousePosition2D, Vector2.zero);
 
+        if(actualSelectedToken != null && raycastHit2D.collider == null)
+        {
+            view.DeselectToken(actualSelectedToken);
+            actualSelectedToken = null;
+        }
+
         if (raycastHit2D.collider != null && raycastHit2D.collider.tag == "Token")
         {
             switch (game_phase)
@@ -164,15 +170,23 @@ public class Controller : MonoBehaviour
                         score += scoreToAdd;
                         UpdateScore(score);
 
-                        if (turnsLeft <= 0)
+
+                        bool stillGotMoves = model.CheckForAvailableMoves();
+                        if (turnsLeft <= 0 || !stillGotMoves)
+                        {
                             RestartGame();
+
+                            while (!stillGotMoves)
+                            {
+                                RestartGame();
+                                stillGotMoves = model.CheckForAvailableMoves();
+                            }
+                        }
 
                         int maxX = 0, maxY = 0;
                         int[,] grid = model.GetGrid(ref maxX, ref maxY);
 
                         view.SwitchGrid(grid, maxX, maxY);
-
-
                         game_phase = Game_Phase.WONDERING;
                     }
                     break;
@@ -192,6 +206,13 @@ public class Controller : MonoBehaviour
         while (!model.CheckForCombinations('x', ref neededIntReference) || !model.CheckForCombinations('y', ref neededIntReference))
         {
             model.PullDownTokens();
+        }
+
+        bool stillGotMoves = model.CheckForAvailableMoves();
+        while(!stillGotMoves)
+        {
+            RestartGame();
+            stillGotMoves = model.CheckForAvailableMoves();
         }
     }
 }

@@ -5,17 +5,23 @@ using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-    public Text scoreText;
-    public Text turnsLeftText;
-    public GameObject RestartImagePanel;
+    [SerializeField] Text scoreText;
+    [SerializeField] Text turnsLeftText;
+    [SerializeField] GameObject RestartImagePanel;
 
-    public Controller controller;
+    [SerializeField] GameObject NoMoreMovesGO;
+    [SerializeField] GameObject NoTurnsLeftGO;
+    
+    [SerializeField] Controller controller;
 
     // Start is called before the first frame update
     void Start()
     {
         controller.UpdateScore = UpdateScoreText;
         controller.UpdateTurnsLeft = UpdateTurnsLeftText;
+        Color c = RestartImagePanel.GetComponent<Image>().material.color;
+        c.a = 0.0f;
+        RestartImagePanel.GetComponent<Image>().material.color = c;
     }
 
     // Update is called once per frame
@@ -24,7 +30,7 @@ public class UIController : MonoBehaviour
         
     }
 
-    IEnumerator RestartImageFadeTo(float aValue, float aTime, GameObject g)
+    IEnumerator ImageFadeTo(float aValue, float aTime, GameObject g)
     {
         Material mat = g.GetComponent<Image>().material;
         float alpha = mat.color.a;
@@ -34,15 +40,17 @@ public class UIController : MonoBehaviour
             mat.color = newColor;
             yield return null;
         }
+
     }
 
-    IEnumerator ShowAndHideRestartImage(float secondsBetweenActions)
+    IEnumerator ShowAndHideImage(float secondsBetweenActions, GameObject ImageGO)
     {
-        StartCoroutine(RestartImageFadeTo(1.0f, 0.3f, RestartImagePanel));
-
+        ImageGO.SetActive(true);
+        StartCoroutine(ImageFadeTo(1.0f, 0.3f, ImageGO));
         yield return new WaitForSeconds(secondsBetweenActions);
-
-        StartCoroutine(RestartImageFadeTo(0.0f, 0.3f, RestartImagePanel));
+        StartCoroutine(ImageFadeTo(0.0f, 0.3f, ImageGO));
+        yield return new WaitForSeconds(0.3f);
+        ImageGO.SetActive(false);
     }
 
     void UpdateScoreText(int newScore)
@@ -50,12 +58,17 @@ public class UIController : MonoBehaviour
         scoreText.text = "Score: " + newScore.ToString();
     }
 
+    void ShowNoMoreMovesAvailable(int i)
+    {
+        StartCoroutine(ShowAndHideImage(4, NoMoreMovesGO));
+    }
+
     void UpdateTurnsLeftText(int newTurnsLeft)
     {
         turnsLeftText.text = "Turns left: " + newTurnsLeft.ToString();
         if(newTurnsLeft <= 0)
         {
-            StartCoroutine(ShowAndHideRestartImage(4));
+            StartCoroutine(ShowAndHideImage(4, NoTurnsLeftGO));
         }
     }
 }
