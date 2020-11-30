@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class View : MonoBehaviour
 {
@@ -27,8 +28,36 @@ public class View : MonoBehaviour
 
         spriteRenderer.gameObject.tag = "Token";
         spriteRenderer.gameObject.transform.parent = tokensParent;
-
+        spriteRenderer.gameObject.SetActive(false);
         return spriteRenderer.gameObject;
+    }
+
+    public IEnumerator PullDownAnimatedTokens(int[,] grid, int xMax, int yMax, UnityAction Callback)
+    {
+        for(int i=0;i<xMax;i++)
+        {
+            for(int j=0;j<yMax;j++)
+            {
+
+            }
+        }
+        yield return null;
+    }
+
+    public IEnumerator SpawnAnimated(int[,] grid, int xMax, int yMax, UnityAction Callback)
+    {
+        for(int i=0;i<xMax;i++)
+        {
+            for(int j=0;j<yMax;j++)
+            {
+                viewGrid[i, j].SetActive(true);
+                Animator animator = viewGrid[i, j].GetComponent<Animator>();
+                animator.SetTrigger("Spawn");
+                yield return null;
+            }
+        }
+
+        Callback();
     }
 
     public void CreateGrid(int[,] grid, int xMax, int yMax, Vector2 tokenOffset)

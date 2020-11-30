@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Controller : MonoBehaviour
 {
@@ -22,6 +23,15 @@ public class Controller : MonoBehaviour
 
     private GameObject actualSelectedToken;
 
+    struct CoroutineCallbacks
+    {
+        public bool allTokensHaveSpawned;
+        public bool tokensExploded;
+        public bool tokensHaveFall;
+    }
+
+    private CoroutineCallbacks coroutineCallbacks;
+
     enum Game_Phase
     {
         WONDERING,
@@ -37,9 +47,15 @@ public class Controller : MonoBehaviour
 
         RestartGame();
 
+        coroutineCallbacks.allTokensHaveSpawned = false;
+        coroutineCallbacks.tokensExploded = false;
+        coroutineCallbacks.tokensHaveFall = false;
+
         int maxX = 0, maxY = 0;
         int[,] grid = model.GetGrid(ref maxX, ref maxY);
         view.CreateGrid(grid, maxX, maxY, tokenOffset);
+        UnityAction AllTokensAnimatedAction = () => { coroutineCallbacks.allTokensHaveSpawned = true; };
+        StartCoroutine(view.SpawnAnimated(grid, maxX, maxY, AllTokensAnimatedAction));
         Camera.main.orthographicSize *= Mathf.Max(maxX, maxY);
         Camera.main.orthographicSize /= 10;
         Vector3 cameraPosition = Camera.main.gameObject.transform.position;
@@ -57,6 +73,9 @@ public class Controller : MonoBehaviour
 
     void Update()
     {
+        if (!coroutineCallbacks.allTokensHaveSpawned)
+            return;
+
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
 
@@ -102,8 +121,6 @@ public class Controller : MonoBehaviour
                         int xPos = 0, yPos = 0;
                         model.GetGameObjectGridPosition(actualSelectedToken, ref xPos, ref yPos, tokenOffset);
                         bool wasTokenSelected = model.SelectToken(xPos, yPos);
-
-                        
 
                         if (wasTokenSelected)
                         {
