@@ -9,14 +9,19 @@ public class Model : MonoBehaviour
 
     int[,] grid;
 
-    [SerializeField] private int AmountOfTokens;
-
     [HideInInspector] public List<Vector2> selectedTokens;
     [HideInInspector] public GameObject onMouseToken;
 
     [SerializeField] private int minTokenAmountCombination;
 
+    enum Token_type
+    {
+        DRAGON,
+        EYE,
+        LIGHT
+    }
 
+    [SerializeField] private List<Token_type> availableTokenTypeList;
 
     // Start is called before the first frame update
     void Start()
@@ -342,7 +347,17 @@ public class Model : MonoBehaviour
 
     void SetRandomGridValue(int x, int y)
     {
-        grid[x, y] = Random.Range(0, AmountOfTokens);
+        grid[x, y] = Random.Range(0, availableTokenTypeList.Count);
+
+        bool validTokenType = false;
+        foreach(Token_type t in availableTokenTypeList)
+        {
+            if (grid[x, y] == (int)t)
+                validTokenType = true;
+        }
+
+        if (!validTokenType)
+            SetRandomGridValue(x, y);
     }
 
     // Update is called once per frame

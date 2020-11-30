@@ -184,10 +184,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sizeX: 10
   sizeY: 10
-  AmountOfTokens: 3
   selectedTokens: []
   onMouseToken: {fileID: 0}
   minTokenAmountCombination: 3
+  availableTokenTypeList: 000000000200000001000000
 --- !u!4 &266288137
 Transform:
   m_ObjectHideFlags: 0
@@ -734,8 +734,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteList:
-  - {fileID: 21300000, guid: eecc838b2e60bf74cb7490f4a474e2cd, type: 3}
   - {fileID: 21300000, guid: 93c12d92ebc01164a9e39c326353c421, type: 3}
+  - {fileID: 21300000, guid: eecc838b2e60bf74cb7490f4a474e2cd, type: 3}
   - {fileID: 21300000, guid: a4bac3c9bbb1d2b449b73db8455259fa, type: 3}
   colliderSize: {x: 1.5, y: 1.5}
   tokensParent: {fileID: 224002961}
