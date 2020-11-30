@@ -6,22 +6,22 @@ using UnityEngine.Events;
 
 public class Controller : MonoBehaviour
 {
-    [SerializeField] View view;
-    [SerializeField] Model model;
+    [SerializeField] View view = null;
+    [SerializeField] Model model = null;
 
-    [SerializeField] private Vector2 tokenOffset;
+    [SerializeField] private Vector2 tokenOffset = Vector2.zero;
 
-    [SerializeField] private int score;
+    [SerializeField] private int score = 0;
 
-    [SerializeField] private int turnsLeft;
-    private int turnsLeftHandler;
+    [SerializeField] private int turnsLeft = 0;
+    private int turnsLeftHandler = 0;
 
     public delegate void OnIntValueUpdate(int newInt);
 
-    public OnIntValueUpdate UpdateScore;
-    public OnIntValueUpdate UpdateTurnsLeft;
+    public OnIntValueUpdate UpdateScore = null;
+    public OnIntValueUpdate UpdateTurnsLeft = null;
 
-    private GameObject actualSelectedToken;
+    private GameObject actualSelectedToken = null;
 
     struct CoroutineCallbacks
     {
@@ -39,7 +39,7 @@ public class Controller : MonoBehaviour
         EXPLODING
     }
 
-    Game_Phase game_phase;
+    Game_Phase game_phase = Game_Phase.WONDERING;
 
     void Start()
     {
@@ -63,13 +63,7 @@ public class Controller : MonoBehaviour
         game_phase = Game_Phase.WONDERING;
     }
 
-    void ChangeMouseToken(GameObject newToken)
-    {
-        if(actualSelectedToken == null)
-        {
-            actualSelectedToken = newToken;
-        }
-    }
+    private Coroutine c = null;
 
     void Update()
     {
@@ -103,16 +97,6 @@ public class Controller : MonoBehaviour
                         {
                             game_phase = Game_Phase.CHAINING;
                         }
-
-                        //if(Input.GetKeyDown(KeyCode.Z))
-                        //{
-                        //    model.PullDownTokens();
-
-                        //    int maxX = 0, maxY = 0;
-                        //    int[,] grid = model.GetGrid(ref maxX, ref maxY);
-
-                        //    view.SwitchGrid(grid, maxX, maxY);
-                        //}
                     }
                     break;
                 case Game_Phase.CHAINING:
@@ -143,10 +127,10 @@ public class Controller : MonoBehaviour
 
                         if (Input.GetMouseButtonUp(0))
                         {
-                            foreach(Vector2 tokenPosition in model.selectedTokens)
-                            {
-                                view.DeselectToken((int)tokenPosition.x, (int)tokenPosition.y);
-                            }
+                            //foreach(Vector2 tokenPosition in model.selectedTokens)
+                            //{
+                            //    view.DeselectToken((int)tokenPosition.x, (int)tokenPosition.y);
+                            //}
 
                             bool exploded = false;
                             score += model.ExplodeChain(ref exploded);
@@ -157,6 +141,7 @@ public class Controller : MonoBehaviour
                                 game_phase = Game_Phase.EXPLODING;
                                 turnsLeft--;
                                 UpdateTurnsLeft(turnsLeft);
+                                coroutineCallbacks.tokensExploded = false;
                             }
                             else
                             {
@@ -174,6 +159,28 @@ public class Controller : MonoBehaviour
                     break;
                 case Game_Phase.EXPLODING:
                     {
+                        int maxX = 0, maxY = 0;
+                        int[,] grid = model.GetGrid(ref maxX, ref maxY);
+
+                        UnityAction action = () => 
+                        {
+                            coroutineCallbacks.tokensExploded = true;
+                            c = null;
+                        };
+
+                        if (!coroutineCallbacks.tokensExploded && c == null)
+                        {
+                            c = StartCoroutine(view.DespawnTokens(grid, maxX, maxY, action));
+                            Debug.Log("coroutine");
+                        }
+
+                        if (!coroutineCallbacks.tokensExploded)
+                        {
+                            return;
+                        }
+
+                        Debug.Log("Paso");
+
                         while (!model.CheckThereAreNoEmptyTokens())
                         {
                             model.PullDownTokens();
@@ -200,8 +207,9 @@ public class Controller : MonoBehaviour
                             }
                         }
 
-                        int maxX = 0, maxY = 0;
-                        int[,] grid = model.GetGrid(ref maxX, ref maxY);
+                        maxX = 0;
+                        maxY = 0;
+                        grid = model.GetGrid(ref maxX, ref maxY);
 
                         view.SwitchGrid(grid, maxX, maxY);
                         game_phase = Game_Phase.WONDERING;

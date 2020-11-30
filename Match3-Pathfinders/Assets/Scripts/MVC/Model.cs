@@ -87,7 +87,7 @@ public class Model : MonoBehaviour
     }
 
      /// <summary>
-     /// Returns true if there are combinations
+     /// Returns true if there are combinations. scoreToAdd returns accumulated points in the checking process
      /// </summary>
     public bool CheckForCombinations(char axis, ref int scoreToAdd)
     {

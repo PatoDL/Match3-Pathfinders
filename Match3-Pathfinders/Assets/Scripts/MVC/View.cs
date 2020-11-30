@@ -32,7 +32,7 @@ public class View : MonoBehaviour
         return spriteRenderer.gameObject;
     }
 
-    public IEnumerator PullDownAnimatedTokens(int[,] grid, int xMax, int yMax, UnityAction Callback)
+    public IEnumerator PullDownAnimatedTokens(int[,] grid, int xMax, int yMax, UnityAction StartCallback)
     {
         for(int i=0;i<xMax;i++)
         {
@@ -42,6 +42,54 @@ public class View : MonoBehaviour
             }
         }
         yield return null;
+    }
+
+    public IEnumerator DespawnTokens(int[,] grid, int xMax, int yMax, UnityAction CallBack)
+    {
+        List<GameObject> tokensToDespawn = new List<GameObject>();
+        for (int i = 0; i < xMax; i++)
+        {
+            for (int j = 0; j < yMax; j++)
+            {
+                if (grid[i, j] == -1)
+                {
+                    tokensToDespawn.Add(viewGrid[i,j]);
+                }
+            }
+        }
+
+        foreach (GameObject g in tokensToDespawn)
+        {
+            Animator animator = g.GetComponent<Animator>();
+
+            if (!animator.GetBool("Despawning"))
+            {
+                animator.SetBool("Despawning", true);
+                animator.SetBool("MouseEnter", false);
+            }
+        }
+
+        int despawnedTokenAmount = 0;
+        while (despawnedTokenAmount < tokensToDespawn.Count)
+        {
+            foreach (GameObject g in tokensToDespawn)
+            {
+                Animator animator = g.GetComponent<Animator>();
+
+                if (!animator.GetBool("Despawning"))
+                {
+                    despawnedTokenAmount++;
+                }
+            }
+
+            if (despawnedTokenAmount < tokensToDespawn.Count)
+                despawnedTokenAmount = 0;
+
+            yield return null;
+        }
+
+        Debug.Log("coroutine end");
+        CallBack();
     }
 
     public IEnumerator SpawnAnimated(int[,] grid, int xMax, int yMax, UnityAction Callback)
