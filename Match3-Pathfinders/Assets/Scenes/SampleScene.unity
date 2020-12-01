@@ -182,8 +182,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3073d59bf0efc394888a26995b21fd42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sizeX: 5
-  sizeY: 5
+  sizeX: 10
+  sizeY: 10
   selectedTokens: []
   onMouseToken: {fileID: 0}
   minTokenAmountCombination: 3
@@ -1231,7 +1231,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 640, y: 960}
+  m_ReferenceResolution: {x: 480, y: 800}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3

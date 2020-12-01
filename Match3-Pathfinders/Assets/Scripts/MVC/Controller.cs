@@ -153,20 +153,11 @@ public class Controller : MonoBehaviour
         if (game_phase == Game_Phase.WONDERING || game_phase == Game_Phase.CHAINING)
         {
 
-#if UNITY_ANDROID && !UNITY_EDITOR
-            if (Input.touchCount > 0)
-            {
-                touch = Input.GetTouch(0);
-                if (touch.phase == TouchPhase.Began)
-                {
-                    selectionActioned = true;
-                    mousePosition = touch.position;
-                }
-            }
-#endif
+
 #if UNITY_EDITOR || UNITY_STANDALONE
 
             mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            
 #endif
 
             mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
@@ -186,6 +177,29 @@ public class Controller : MonoBehaviour
         {
             case Game_Phase.WONDERING:
                 {
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            if (Input.touchCount > 0)
+            {
+                touch = Input.GetTouch(0);
+                if (touch.phase == TouchPhase.Began)
+                {
+                    selectionActioned = true;
+                    mousePosition = Camera.main.ScreenToWorldPoint(touch.position);
+
+                    mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
+
+                    raycastHit2D = Physics2D.Raycast(mousePosition2D, Vector2.zero);
+
+                    if (actualSelectedToken != null && raycastHit2D.collider == null)
+                    {
+                        view.DeselectToken(actualSelectedToken);
+                        actualSelectedToken = null;
+                    }
+                }
+            }
+#endif
+
                     if (raycastHit2D.collider == null || raycastHit2D.collider.tag != "Token")
                         return;
                     
@@ -200,9 +214,7 @@ public class Controller : MonoBehaviour
                         view.SelectToken(actualSelectedToken);
                     }
 
-#if UNITY_ANDROID && !UNITY_EDITOR
-                    selectionActioned = (touch.phase == TouchPhase.Ended);
-#endif
+
 
 #if UNITY_EDITOR || UNITY_STANDALONE
 
@@ -216,6 +228,9 @@ public class Controller : MonoBehaviour
                 break;
             case Game_Phase.CHAINING:
                 {
+
+                    raycastHit2D = Physics2D.Raycast(mousePosition2D, Vector2.zero);
+
                     actualSelectedToken = raycastHit2D.collider.gameObject;
                     int xPos = 0, yPos = 0;
                     model.GetGameObjectGridPosition(actualSelectedToken, ref xPos, ref yPos, tokenOffset);
