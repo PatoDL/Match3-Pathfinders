@@ -62,8 +62,13 @@ public class Controller : MonoBehaviour
         view.CreateGrid(grid, maxX, maxY, tokenOffset);
         UnityAction AllTokensAnimatedAction = () => { coroutineCallbacks.allTokensHaveSpawned = true; };
         StartCoroutine(view.SpawnAnimated(grid, maxX, maxY, AllTokensAnimatedAction));
-        Camera.main.orthographicSize *= Mathf.Max(maxX, maxY);
-        Camera.main.orthographicSize /= 10;
+
+        float tokensRes = Screen.currentResolution.width * Mathf.Max(maxX,maxY);
+
+        Debug.Log(tokensRes);
+
+        Camera.main.orthographicSize = 9/(115200f / tokensRes)*9;
+
         Vector3 cameraPosition = Camera.main.gameObject.transform.position;
         Camera.main.gameObject.transform.position = new Vector3((maxX-1) * tokenOffset.x / 2, (maxY - 1) * tokenOffset.y / 2, cameraPosition.z);
         game_phase = Game_Phase.WONDERING;
@@ -154,6 +159,8 @@ public class Controller : MonoBehaviour
                 actualSelectedToken = null;
             }
         }
+
+        
 
         switch (game_phase)
         {
