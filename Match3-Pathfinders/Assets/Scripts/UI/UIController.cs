@@ -1,16 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
     [SerializeField] Text scoreText;
     [SerializeField] Text turnsLeftText;
-    [SerializeField] GameObject RestartImagePanel;
+    [SerializeField] GameObject restartImagePanel;
 
-    [SerializeField] GameObject NoMoreMovesGO;
-    [SerializeField] GameObject NoTurnsLeftGO;
+    [SerializeField] GameObject noMoreMovesGO;
+    [SerializeField] GameObject noTurnsLeftGO;
     
     [SerializeField] Controller controller;
 
@@ -19,18 +20,12 @@ public class UIController : MonoBehaviour
     {
         controller.UpdateScore = UpdateScoreText;
         controller.UpdateTurnsLeft = UpdateTurnsLeftText;
-        Color c = RestartImagePanel.GetComponent<Image>().material.color;
+        Color c = restartImagePanel.GetComponent<Image>().material.color;
         c.a = 0.0f;
-        RestartImagePanel.GetComponent<Image>().material.color = c;
+        restartImagePanel.GetComponent<Image>().material.color = c;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    IEnumerator ImageFadeTo(float aValue, float aTime, GameObject g)
+    IEnumerator ImageFadeTo(float aValue, float aTime, GameObject g, UnityAction Callback)
     {
         Material mat = g.GetComponent<Image>().material;
         float alpha = mat.color.a;
@@ -41,16 +36,15 @@ public class UIController : MonoBehaviour
             yield return null;
         }
 
+        Callback?.Invoke();
     }
 
     IEnumerator ShowAndHideImage(float secondsBetweenActions, GameObject ImageGO)
     {
         ImageGO.SetActive(true);
-        StartCoroutine(ImageFadeTo(1.0f, 0.3f, ImageGO));
+        StartCoroutine(ImageFadeTo(1.0f, 0.3f, ImageGO, null));
         yield return new WaitForSeconds(secondsBetweenActions);
-        StartCoroutine(ImageFadeTo(0.0f, 0.3f, ImageGO));
-        yield return new WaitForSeconds(0.3f);
-        ImageGO.SetActive(false);
+        StartCoroutine(ImageFadeTo(0.0f, 0.3f, ImageGO, () => { ImageGO.SetActive(false); }));
     }
 
     void UpdateScoreText(int newScore)
@@ -60,7 +54,7 @@ public class UIController : MonoBehaviour
 
     void ShowNoMoreMovesAvailable(int i)
     {
-        StartCoroutine(ShowAndHideImage(4, NoMoreMovesGO));
+        StartCoroutine(ShowAndHideImage(4, noMoreMovesGO));
     }
 
     void UpdateTurnsLeftText(int newTurnsLeft)
@@ -68,7 +62,7 @@ public class UIController : MonoBehaviour
         turnsLeftText.text = "Turns left: " + newTurnsLeft.ToString();
         if(newTurnsLeft <= 0)
         {
-            StartCoroutine(ShowAndHideImage(4, NoTurnsLeftGO));
+            StartCoroutine(ShowAndHideImage(4, noTurnsLeftGO));
         }
     }
 

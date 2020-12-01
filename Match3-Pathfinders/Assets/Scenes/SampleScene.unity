@@ -1197,9 +1197,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoreText: {fileID: 471011464}
   turnsLeftText: {fileID: 599020969}
-  RestartImagePanel: {fileID: 1618722056}
-  NoMoreMovesGO: {fileID: 1584796019}
-  NoTurnsLeftGO: {fileID: 1516059993}
+  restartImagePanel: {fileID: 1618722056}
+  noMoreMovesGO: {fileID: 1584796019}
+  noTurnsLeftGO: {fileID: 1516059993}
   controller: {fileID: 1472797402}
 --- !u!114 &1249116524
 MonoBehaviour:
