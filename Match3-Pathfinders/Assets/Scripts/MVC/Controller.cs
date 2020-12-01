@@ -146,18 +146,29 @@ public class Controller : MonoBehaviour
         Vector2 mousePosition2D = Vector2.zero;
         RaycastHit2D raycastHit2D = default;
 
+        Touch touch = default;
 
+        bool selectionActioned = false;
 
         if (game_phase == Game_Phase.WONDERING || game_phase == Game_Phase.CHAINING)
         {
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-            mousePosition = Input.touches[0].position;
-            
+            if (Input.touchCount > 0)
+            {
+                touch = Input.GetTouch(0);
+                if (touch.phase == TouchPhase.Began)
+                {
+                    selectionActioned = true;
+                    mousePosition = touch.position;
+                }
+            }
 #endif
 #if UNITY_EDITOR || UNITY_STANDALONE
+
             mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 #endif
+
             mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
 
             raycastHit2D = Physics2D.Raycast(mousePosition2D, Vector2.zero);
@@ -189,8 +200,15 @@ public class Controller : MonoBehaviour
                         view.SelectToken(actualSelectedToken);
                     }
 
+#if UNITY_ANDROID && !UNITY_EDITOR
+                    selectionActioned = (touch.phase == TouchPhase.Ended);
+#endif
 
-                    if (Input.GetMouseButton(0))
+#if UNITY_EDITOR || UNITY_STANDALONE
+
+                    selectionActioned = Input.GetMouseButton(0);
+#endif
+                    if (selectionActioned)
                     {
                         game_phase = Game_Phase.CHAINING;
                     }
@@ -222,7 +240,16 @@ public class Controller : MonoBehaviour
                         }
                     }
 
-                    if (Input.GetMouseButtonUp(0))
+                    bool explodeActioned = false;
+
+
+#if UNITY_EDITOR || UNITY_STANDALONE
+
+                    explodeActioned = Input.GetMouseButtonUp(0);
+#endif
+
+
+                    if (explodeActioned)
                     {
                         bool exploded = false;
                         score += model.ExplodeChain(ref exploded);
