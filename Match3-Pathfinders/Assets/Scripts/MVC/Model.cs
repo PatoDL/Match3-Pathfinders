@@ -87,10 +87,12 @@ public class Model : MonoBehaviour
         return false;
     }
 
-     /// <summary>
-     /// Returns true if there are combinations. scoreToAdd returns accumulated points in the checking process
-     /// </summary>
-    public bool CheckForCombinations(char axis, ref int scoreToAdd)
+    /// <summary>
+    /// Returns true if there are combinations.  
+    /// Also explodes every combination found, turning values to -1.  
+    /// scoreToAdd returns accumulated points in the checking process
+    /// </summary>
+    public bool CheckAndExplodeCombinations(char axis, ref int scoreToAdd)
     {
         int lastToken = -1;
         int count = 1;
@@ -203,7 +205,7 @@ public class Model : MonoBehaviour
         return grid[x, y];
     }
 
-    public void PullDownTokens(UnityAction<List<Vector3>> returnCallback)
+    public List<Vector3> PullDownTokens()
     {
         List<Vector3> toReturn = new List<Vector3>();
 
@@ -270,43 +272,43 @@ public class Model : MonoBehaviour
         //    Debug.Log(grid[(int)v.x, (int)v.z]);
         //}
 
-        returnCallback?.Invoke(toReturn);
+        return toReturn;
     }
 
-    public void PullDownTokens()
-    {
-        for (int i = 0; i < sizeX; i++)
-        {
-            for (int j = 0; j < sizeY; j++)
-            {
-                if (grid[i, j] == -1)
-                {
-                    int thisToken = grid[i, j];
-                    int k = j;
-                    while (thisToken == -1)
-                    {
-                        k++;
-                        if (k == sizeY)
-                            break;
-                        thisToken = grid[i, k];
-                    }
+    //public void PullDownTokens()
+    //{
+    //    for (int i = 0; i < sizeX; i++)
+    //    {
+    //        for (int j = 0; j < sizeY; j++)
+    //        {
+    //            if (grid[i, j] == -1)
+    //            {
+    //                int thisToken = grid[i, j];
+    //                int k = j;
+    //                while (thisToken == -1)
+    //                {
+    //                    k++;
+    //                    if (k == sizeY)
+    //                        break;
+    //                    thisToken = grid[i, k];
+    //                }
 
-                    if (k == sizeY)
-                    {
-                        for (k = j; k < sizeY; k++)
-                        {
-                            SetRandomGridValue(i, k);
-                        }
+    //                if (k == sizeY)
+    //                {
+    //                    for (k = j; k < sizeY; k++)
+    //                    {
+    //                        SetRandomGridValue(i, k);
+    //                    }
 
-                        continue;
-                    }
+    //                    continue;
+    //                }
 
-                    grid[i, j] = grid[i, k];
-                    grid[i, k] = -1;
-                }
-            }
-        }
-    }
+    //                grid[i, j] = grid[i, k];
+    //                grid[i, k] = -1;
+    //            }
+    //        }
+    //    }
+    //}
 
     public void GetGameObjectGridPosition(GameObject tokenGameObject, ref int x, ref int y, Vector2 offset)
     {

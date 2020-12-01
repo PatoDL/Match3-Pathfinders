@@ -71,26 +71,95 @@ public class Controller : MonoBehaviour
 
     private Coroutine c = null;
 
+    void PassDespawningTokensToView(UnityAction nextAction)
+    {
+        int maxX = 0, maxY = 0;
+        int[,] grid = model.GetGrid(ref maxX, ref maxY);
+        StartCoroutine(view.DespawnTokens(grid, maxX, maxY, nextAction));
+    }
+
+    void PassFallingTokensToView(List<Vector3> tokensToPass, UnityAction nextAction)
+    {
+        int maxX = 0, maxY = 0;
+        int[,] grid = model.GetGrid(ref maxX, ref maxY);
+
+        StartCoroutine(view.PullDownAnimatedTokens(grid, tokensToPass, tokenOffset, maxX, maxY, nextAction));
+    }
+
+    void CheckForNewCombinationsAndAddScore()
+    {
+        int scoreToAdd = 0;
+        coroutineCallbacks.tokensHaveFall = true;
+
+        //when tokens have fell, the update can advance to next step, checking for new combinations
+        bool combinationsRemaining = (!model.CheckAndExplodeCombinations('x', ref scoreToAdd) ||
+                                                    !model.CheckAndExplodeCombinations('y', ref scoreToAdd));
+
+        score += scoreToAdd;
+        UpdateScore(score);
+
+
+        //------------------------------------------------------------------------
+
+
+        int maxX = 0, maxY = 0;
+        int[,] grid = model.GetGrid(ref maxX, ref maxY);
+
+        if (combinationsRemaining)
+        {
+            UnityAction actionCallback = () =>
+            {
+                PassFallingTokensToView(model.PullDownTokens(), CheckForNewCombinationsAndAddScore);
+            };
+
+            PassDespawningTokensToView(actionCallback);
+        }
+        else
+        {
+            UpdateTurnsLeft(turnsLeft);
+
+            if (turnsLeft <= turnsLeftHandler / 4)
+                audioSource.pitch = 1.1f;
+
+            bool stillGotMoves = model.CheckForAvailableMoves();
+            if (turnsLeft <= 0 || !stillGotMoves)
+            {
+                RestartGame();
+
+                
+                view.SwitchGrid(grid, maxX, maxY);
+            }
+
+            game_phase = Game_Phase.WONDERING;
+        }
+    }
+
     void Update()
     {
         if (!coroutineCallbacks.allTokensHaveSpawned)
             return;
 
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
+        Vector3 mousePosition = Vector3.zero;
+        Vector2 mousePosition2D = Vector2.zero;
+        RaycastHit2D raycastHit2D = default;
 
-        RaycastHit2D raycastHit2D = Physics2D.Raycast(mousePosition2D, Vector2.zero);
-
-        if(actualSelectedToken != null && raycastHit2D.collider == null)
+        if (game_phase == Game_Phase.WONDERING || game_phase == Game_Phase.CHAINING)
         {
-            view.DeselectToken(actualSelectedToken);
-            actualSelectedToken = null;
+            mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
+
+            raycastHit2D = Physics2D.Raycast(mousePosition2D, Vector2.zero);
+
+            if (actualSelectedToken != null && raycastHit2D.collider == null)
+            {
+                view.DeselectToken(actualSelectedToken);
+                actualSelectedToken = null;
+            }
         }
 
-        
         switch (game_phase)
         {
-                case Game_Phase.WONDERING:
+            case Game_Phase.WONDERING:
                 {
                     if (raycastHit2D.collider == null || raycastHit2D.collider.tag != "Token")
                         return;
@@ -150,9 +219,12 @@ public class Controller : MonoBehaviour
                             game_phase = Game_Phase.EXPLODING;
                             turnsLeft--;
 
-                            
+                            UnityAction nextAction = () =>
+                            {
+                                PassFallingTokensToView(model.PullDownTokens(), CheckForNewCombinationsAndAddScore);
+                            };
 
-                            coroutineCallbacks.tokensExploded = false;
+                            PassDespawningTokensToView(nextAction);
                         }
                         else
                         {
@@ -170,114 +242,6 @@ public class Controller : MonoBehaviour
                 break;
             case Game_Phase.EXPLODING:
                 {
-                    int maxX = 0, maxY = 0;
-                    int[,] grid = model.GetGrid(ref maxX, ref maxY);
-
-                    UnityAction action;
-
-                    action = () =>
-                    {
-                        coroutineCallbacks.tokensExploded = true;
-                        c = null;
-                    };
-
-                    if (!coroutineCallbacks.tokensExploded)
-                    {
-
-
-                        if (c == null)
-                        {
-                            maxX = 0;
-                            maxY = 0;
-                            grid = model.GetGrid(ref maxX, ref maxY);
-                            c = StartCoroutine(view.DespawnTokens(grid, maxX, maxY, action));
-                        }
-                            
-
-                        coroutineCallbacks.tokensHaveFall = true;
-
-                        return; //wait for destroy animation to finish
-                    }
-
-                    //once destroy animation has finished
-
-                    
-                    action = () =>
-                    {
-                        int scoreToAdd = 0;
-                        coroutineCallbacks.tokensHaveFall = true;
-
-                        //when tokens have fell, the update can advance to next step, checking for new combinations
-                        coroutineCallbacks.combinationsRemaining = (!model.CheckForCombinations('x', ref scoreToAdd) ||
-                                                 !model.CheckForCombinations('y', ref scoreToAdd));
-
-                        score += scoreToAdd;
-                        UpdateScore(score);
-
-                        
-
-
-
-                        //if there are still combinations to explode, this check makes it returns to the first step
-
-                        if (coroutineCallbacks.combinationsRemaining)
-                        {
-                            coroutineCallbacks.tokensExploded = false;
-                            coroutineCallbacks.tokensHaveFall = false;
-                            coroutineCallbacks.combinationsRemaining = false;
-                        }
-                        else
-                        {
-                            UpdateTurnsLeft(turnsLeft);
-
-                            if (turnsLeft <= turnsLeftHandler / 4)
-                                audioSource.pitch = 1.1f;
-
-                            bool stillGotMoves = model.CheckForAvailableMoves();
-                            if (turnsLeft <= 0 || !stillGotMoves)
-                            {
-                                RestartGame();
-
-                                maxX = 0;
-                                maxY = 0;
-                                grid = model.GetGrid(ref maxX, ref maxY);
-                                view.SwitchGrid(grid, maxX, maxY);
-                            }
-
-                            game_phase = Game_Phase.WONDERING;
-                        }
-                    };
-
-
-                    
-
-                    UnityAction<List<Vector3>> actionWithVec = (tokenToPass) => {
-
-                        maxX = 0;
-                        maxY = 0;
-                        grid = model.GetGrid(ref maxX, ref maxY);
-
-                        StartCoroutine(view.PullDownAnimatedTokens(grid, tokenToPass,tokenOffset, maxX, maxY, action));
-                    };
-
-                    
-                    bool emptyTokensRemaining = !model.CheckThereAreNoEmptyTokens();
-                    
-
-                    if (coroutineCallbacks.tokensHaveFall && (emptyTokensRemaining /*|| combinationsRemaining*/))
-                    {
-                        coroutineCallbacks.tokensHaveFall = false;
-
-                        model.PullDownTokens(actionWithVec);
-                    }
-
-                    if (!coroutineCallbacks.tokensHaveFall)
-                    {
-                        return;
-                    }
-
-
-
 
                 }
                 break;
@@ -302,7 +266,7 @@ public class Controller : MonoBehaviour
         else
         {
             int neededIntReference = 0;
-            while (!model.CheckForCombinations('x', ref neededIntReference) || !model.CheckForCombinations('y', ref neededIntReference))
+            while (!model.CheckAndExplodeCombinations('x', ref neededIntReference) || !model.CheckAndExplodeCombinations('y', ref neededIntReference))
             {
                 model.PullDownTokens();
             }
