@@ -18,6 +18,8 @@ public class View : MonoBehaviour
     [SerializeField] private RuntimeAnimatorController animatorController;
     private LineRenderer lineRenderer;
 
+    private AudioSource viewAudioSource;
+
     private List<GameObject> fallingObjects;
 
     private GameObject[,] viewGrid;
@@ -27,6 +29,7 @@ public class View : MonoBehaviour
     {
         lineRenderer = GetComponent<LineRenderer>();
         fallingObjects = new List<GameObject>();
+        viewAudioSource = GetComponent<AudioSource>();
     }
 
     #region AnimationRegion
@@ -329,6 +332,8 @@ public class View : MonoBehaviour
     {
         viewGrid[x, y].GetComponent<SpriteRenderer>().material.color = Color.red;
         StartCoroutine(BackToItsOriginalColor(x, y));
+        if(!viewAudioSource.isPlaying)
+            viewAudioSource.Play();
     }
 
     IEnumerator BackToItsOriginalColor(int x, int y)
