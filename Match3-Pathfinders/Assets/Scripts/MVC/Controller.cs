@@ -69,8 +69,6 @@ public class Controller : MonoBehaviour
         game_phase = Game_Phase.WONDERING;
     }
 
-    private Coroutine c = null;
-
     void PassDespawningTokensToView(UnityAction nextAction)
     {
         int maxX = 0, maxY = 0;
