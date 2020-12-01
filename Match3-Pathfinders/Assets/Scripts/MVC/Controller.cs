@@ -16,6 +16,8 @@ public class Controller : MonoBehaviour
     [SerializeField] private int turnsLeft = 0;
     private int turnsLeftHandler = 0;
 
+    private AudioSource audioSource = null;
+
     public delegate void OnIntValueUpdate(int newInt);
 
     public OnIntValueUpdate UpdateScore = null;
@@ -28,6 +30,7 @@ public class Controller : MonoBehaviour
         public bool allTokensHaveSpawned;
         public bool tokensExploded;
         public bool tokensHaveFall;
+        public bool combinationsRemaining;
     }
 
     private CoroutineCallbacks coroutineCallbacks;
@@ -43,6 +46,8 @@ public class Controller : MonoBehaviour
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
+
         turnsLeftHandler = turnsLeft;
 
         RestartGame();
@@ -50,6 +55,7 @@ public class Controller : MonoBehaviour
         coroutineCallbacks.allTokensHaveSpawned = false;
         coroutineCallbacks.tokensExploded = false;
         coroutineCallbacks.tokensHaveFall = false;
+        coroutineCallbacks.combinationsRemaining = false;
 
         int maxX = 0, maxY = 0;
         int[,] grid = model.GetGrid(ref maxX, ref maxY);
@@ -81,145 +87,205 @@ public class Controller : MonoBehaviour
             actualSelectedToken = null;
         }
 
-        if (raycastHit2D.collider != null && raycastHit2D.collider.tag == "Token")
+        
+        switch (game_phase)
         {
-            switch (game_phase)
-            {
                 case Game_Phase.WONDERING:
+                {
+                    if (raycastHit2D.collider == null || raycastHit2D.collider.tag != "Token")
+                        return;
+                    
+                    if (actualSelectedToken != null && actualSelectedToken != raycastHit2D.collider.gameObject)
                     {
-                        if (actualSelectedToken != null && actualSelectedToken != raycastHit2D.collider.gameObject)
-                        {
-                            view.DeselectToken(actualSelectedToken);
-                        }
+                        view.DeselectToken(actualSelectedToken);
+                    }
+
+                    if (actualSelectedToken != raycastHit2D.collider.gameObject)
+                    {
                         actualSelectedToken = raycastHit2D.collider.gameObject;
                         view.SelectToken(actualSelectedToken);
-                        if (Input.GetMouseButton(0))
+                    }
+
+
+                    if (Input.GetMouseButton(0))
+                    {
+                        game_phase = Game_Phase.CHAINING;
+                    }
+                }
+                break;
+            case Game_Phase.CHAINING:
+                {
+                    actualSelectedToken = raycastHit2D.collider.gameObject;
+                    int xPos = 0, yPos = 0;
+                    model.GetGameObjectGridPosition(actualSelectedToken, ref xPos, ref yPos, tokenOffset);
+                    bool wasTokenSelected = model.SelectToken(xPos, yPos);
+
+                    if (wasTokenSelected)
+                    {
+                        view.SelectToken(actualSelectedToken);
+                        Vector3 position = raycastHit2D.transform.gameObject.transform.position;
+                        position.z = -1;
+                        view.AddLinePosition(position);
+                    }
+                    else
+                    {
+                        Vector2 toRemove = Vector2.zero;
+                        bool goingBackwards = model.CheckTokenSelectionGoingBackwards(xPos, yPos, ref toRemove);
+
+                        if (goingBackwards)
                         {
-                            game_phase = Game_Phase.CHAINING;
+                            view.DeselectToken((int)toRemove.x, (int)toRemove.y);
+                            view.RemoveLinePosition();
                         }
                     }
-                    break;
-                case Game_Phase.CHAINING:
-                    {
-                        actualSelectedToken = raycastHit2D.collider.gameObject;
-                        int xPos = 0, yPos = 0;
-                        model.GetGameObjectGridPosition(actualSelectedToken, ref xPos, ref yPos, tokenOffset);
-                        bool wasTokenSelected = model.SelectToken(xPos, yPos);
 
-                        if (wasTokenSelected)
-                        {
-                            view.SelectToken(actualSelectedToken);
-                            Vector3 position = raycastHit2D.transform.gameObject.transform.position;
-                            position.z = -1;
-                            view.AddLinePosition(position);
+                    if (Input.GetMouseButtonUp(0))
+                    {
+                        bool exploded = false;
+                        score += model.ExplodeChain(ref exploded);
+                        UpdateScore(score);
+
+                        if(exploded)
+                        {   
+                            game_phase = Game_Phase.EXPLODING;
+                            turnsLeft--;
+
+                            
+
+                            coroutineCallbacks.tokensExploded = false;
                         }
                         else
                         {
-                            Vector2 toRemove = Vector2.zero;
-                            bool goingBackwards = model.CheckTokenSelectionGoingBackwards(xPos, yPos, ref toRemove);
-
-                            if (goingBackwards)
+                            foreach (Vector2 tokenPosition in model.selectedTokens)
                             {
-                                view.DeselectToken((int)toRemove.x, (int)toRemove.y);
-                                view.RemoveLinePosition();
+                                view.MarkError((int)tokenPosition.x, (int)tokenPosition.y);
                             }
+
+                            model.selectedTokens.Clear();
+                            game_phase = Game_Phase.WONDERING;
                         }
-
-                        if (Input.GetMouseButtonUp(0))
-                        {
-                            //foreach(Vector2 tokenPosition in model.selectedTokens)
-                            //{
-                            //    view.DeselectToken((int)tokenPosition.x, (int)tokenPosition.y);
-                            //}
-
-                            bool exploded = false;
-                            score += model.ExplodeChain(ref exploded);
-                            UpdateScore(score);
-
-                            if(exploded)
-                            {   
-                                game_phase = Game_Phase.EXPLODING;
-                                turnsLeft--;
-                                UpdateTurnsLeft(turnsLeft);
-                                coroutineCallbacks.tokensExploded = false;
-                            }
-                            else
-                            {
-                                foreach (Vector2 tokenPosition in model.selectedTokens)
-                                {
-                                    view.MarkError((int)tokenPosition.x, (int)tokenPosition.y);
-                                }
-
-                                model.selectedTokens.Clear();
-                                game_phase = Game_Phase.WONDERING;
-                            }
-                            view.ResetLineRenderer();
-                        }
+                        view.ResetLineRenderer();
                     }
-                    break;
-                case Game_Phase.EXPLODING:
+                }
+                break;
+            case Game_Phase.EXPLODING:
+                {
+                    int maxX = 0, maxY = 0;
+                    int[,] grid = model.GetGrid(ref maxX, ref maxY);
+
+                    UnityAction action;
+
+                    action = () =>
                     {
-                        int maxX = 0, maxY = 0;
-                        int[,] grid = model.GetGrid(ref maxX, ref maxY);
+                        coroutineCallbacks.tokensExploded = true;
+                        c = null;
+                    };
 
-                        UnityAction action = () => 
-                        {
-                            coroutineCallbacks.tokensExploded = true;
-                            c = null;
-                        };
+                    if (!coroutineCallbacks.tokensExploded)
+                    {
 
-                        if (!coroutineCallbacks.tokensExploded && c == null)
+
+                        if (c == null)
                         {
+                            maxX = 0;
+                            maxY = 0;
+                            grid = model.GetGrid(ref maxX, ref maxY);
                             c = StartCoroutine(view.DespawnTokens(grid, maxX, maxY, action));
-                            Debug.Log("coroutine");
                         }
+                            
 
-                        if (!coroutineCallbacks.tokensExploded)
-                        {
-                            return;
-                        }
+                        coroutineCallbacks.tokensHaveFall = true;
 
-                        Debug.Log("Paso");
+                        return; //wait for destroy animation to finish
+                    }
 
-                        while (!model.CheckThereAreNoEmptyTokens())
-                        {
-                            model.PullDownTokens();
-                        }
+                    //once destroy animation has finished
 
+                    
+                    action = () =>
+                    {
                         int scoreToAdd = 0;
-                        while (!model.CheckForCombinations('x', ref scoreToAdd) || !model.CheckForCombinations('y', ref scoreToAdd))
-                        {
-                            model.PullDownTokens();
-                        }
+                        coroutineCallbacks.tokensHaveFall = true;
+
+                        //when tokens have fell, the update can advance to next step, checking for new combinations
+                        coroutineCallbacks.combinationsRemaining = (!model.CheckForCombinations('x', ref scoreToAdd) ||
+                                                 !model.CheckForCombinations('y', ref scoreToAdd));
+
                         score += scoreToAdd;
                         UpdateScore(score);
 
+                        
 
-                        bool stillGotMoves = model.CheckForAvailableMoves();
-                        if (turnsLeft <= 0 || !stillGotMoves)
+
+
+                        //if there are still combinations to explode, this check makes it returns to the first step
+
+                        if (coroutineCallbacks.combinationsRemaining)
                         {
-                            RestartGame();
+                            coroutineCallbacks.tokensExploded = false;
+                            coroutineCallbacks.tokensHaveFall = false;
+                            coroutineCallbacks.combinationsRemaining = false;
+                        }
+                        else
+                        {
+                            UpdateTurnsLeft(turnsLeft);
 
-                            while (!stillGotMoves)
+                            if (turnsLeft <= turnsLeftHandler / 4)
+                                audioSource.pitch = 1.1f;
+
+                            bool stillGotMoves = model.CheckForAvailableMoves();
+                            if (turnsLeft <= 0 || !stillGotMoves)
                             {
                                 RestartGame();
-                                stillGotMoves = model.CheckForAvailableMoves();
+
+                                maxX = 0;
+                                maxY = 0;
+                                grid = model.GetGrid(ref maxX, ref maxY);
+                                view.SwitchGrid(grid, maxX, maxY);
                             }
+
+                            game_phase = Game_Phase.WONDERING;
                         }
+                    };
+
+
+                    
+
+                    UnityAction<List<Vector3>> actionWithVec = (tokenToPass) => {
 
                         maxX = 0;
                         maxY = 0;
                         grid = model.GetGrid(ref maxX, ref maxY);
 
-                        view.SwitchGrid(grid, maxX, maxY);
-                        game_phase = Game_Phase.WONDERING;
+                        StartCoroutine(view.PullDownAnimatedTokens(grid, tokenToPass,tokenOffset, maxX, maxY, action));
+                    };
+
+                    
+                    bool emptyTokensRemaining = !model.CheckThereAreNoEmptyTokens();
+                    
+
+                    if (coroutineCallbacks.tokensHaveFall && (emptyTokensRemaining /*|| combinationsRemaining*/))
+                    {
+                        coroutineCallbacks.tokensHaveFall = false;
+
+                        model.PullDownTokens(actionWithVec);
                     }
-                    break;
-            }
+
+                    if (!coroutineCallbacks.tokensHaveFall)
+                    {
+                        return;
+                    }
+
+
+
+
+                }
+                break;
         }
+        
     }
 
-    private void RestartGame()
+    private void RestartGame(bool animated = false)
     {
         model.CreateNewGrid();
         score = 0;
@@ -227,16 +293,25 @@ public class Controller : MonoBehaviour
         turnsLeft = turnsLeftHandler;
         UpdateTurnsLeft(turnsLeft);
 
-        int neededIntReference = 0;
-        while (!model.CheckForCombinations('x', ref neededIntReference) || !model.CheckForCombinations('y', ref neededIntReference))
+        audioSource.pitch = 1.0f;
+
+        if (animated)
         {
-            model.PullDownTokens();
+
+        }
+        else
+        {
+            int neededIntReference = 0;
+            while (!model.CheckForCombinations('x', ref neededIntReference) || !model.CheckForCombinations('y', ref neededIntReference))
+            {
+                model.PullDownTokens();
+            }
         }
 
         bool stillGotMoves = model.CheckForAvailableMoves();
-        while(!stillGotMoves)
+        while (!stillGotMoves)
         {
-            RestartGame();
+            RestartGame(animated);
             stillGotMoves = model.CheckForAvailableMoves();
         }
     }

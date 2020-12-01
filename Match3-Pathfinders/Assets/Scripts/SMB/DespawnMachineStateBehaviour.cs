@@ -5,10 +5,13 @@ using UnityEngine;
 public class DespawnMachineStateBehaviour : StateMachineBehaviour
 {
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
-    //override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    
-    //}
+    override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        base.OnStateEnter(animator, stateInfo, layerIndex);
+        AudioSource audioSource = animator.GetComponent<AudioSource>();
+        audioSource.pitch = 0.5f;
+        audioSource.Play();
+    }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
     //override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
@@ -23,7 +26,6 @@ public class DespawnMachineStateBehaviour : StateMachineBehaviour
 
         animator.SetBool("Despawning",false);
         animator.GetComponent<SpriteRenderer>().sprite = null;
-        animator.gameObject.transform.localScale = Vector3.zero;
     }
 
     // OnStateMove is called right after Animator.OnAnimatorMove()

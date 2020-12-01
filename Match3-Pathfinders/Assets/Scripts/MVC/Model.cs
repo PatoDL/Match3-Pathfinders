@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Model : MonoBehaviour
 {
@@ -42,7 +43,7 @@ public class Model : MonoBehaviour
         }
     }
 
-    public bool CheckForAvailableMoves()
+    public bool CheckForAvailableMoves() //only for 3 chained tokens
     {
         for(int i = 0; i < sizeX; i++)
         {
@@ -202,8 +203,10 @@ public class Model : MonoBehaviour
         return grid[x, y];
     }
 
-    public void PullDownTokens()
+    public void PullDownTokens(UnityAction<List<Vector3>> returnCallback)
     {
+        List<Vector3> toReturn = new List<Vector3>();
+
         for(int i=0;i<sizeX;i++)
         {
             for(int j=0;j<sizeY;j++)
@@ -220,7 +223,75 @@ public class Model : MonoBehaviour
                         thisToken = grid[i, k];
                     }
 
-                    if (k ==sizeY)
+                    if (k == sizeY)
+                    {
+                        int l = 0;
+
+                        List<Vector3> auxList = new List<Vector3>();
+                        UnityAction a = () =>
+                        {
+                            for (k = j; k < sizeY; k++)
+                            {
+                                SetRandomGridValue(i, k);
+                                Vector3 aux = new Vector3(i, sizeY + l, j + l);
+                                l++;
+                                auxList.Add(aux);
+                            }
+                        };
+
+                        a();
+
+                        while (!CheckForAvailableMoves())
+                        {
+                            auxList.Clear();
+                            a();
+                        }
+
+                        foreach (Vector3 v in auxList)
+                        {
+                            toReturn.Add(v);
+                        }
+
+                        
+                        auxList = null;
+
+                        continue;
+                    }
+
+                    toReturn.Add(new Vector3(i, k, j));
+                    grid[i, j] = grid[i, k];
+                    grid[i, k] = -1;
+                }
+            }
+        }
+
+        //foreach (Vector3 v in toReturn)
+        //{
+        //    Debug.Log(grid[(int)v.x, (int)v.z]);
+        //}
+
+        returnCallback?.Invoke(toReturn);
+    }
+
+    public void PullDownTokens()
+    {
+        for (int i = 0; i < sizeX; i++)
+        {
+            for (int j = 0; j < sizeY; j++)
+            {
+                if (grid[i, j] == -1)
+                {
+                    int thisToken = grid[i, j];
+                    int k = j;
+                    while (thisToken == -1)
+                    {
+                        k++;
+                        if (k == sizeY)
+                            break;
+                        thisToken = grid[i, k];
+                    }
+
+                    if (k == sizeY)
                     {
                         for (k = j; k < sizeY; k++)
                         {
