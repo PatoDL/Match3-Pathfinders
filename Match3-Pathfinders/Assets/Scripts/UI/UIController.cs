@@ -71,4 +71,13 @@ public class UIController : MonoBehaviour
             StartCoroutine(ShowAndHideImage(4, NoTurnsLeftGO));
         }
     }
+
+    public void QuitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+         Application.Quit();
+#endif
+    }
 }

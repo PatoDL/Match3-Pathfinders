@@ -20,7 +20,7 @@ public class View : MonoBehaviour
 
     private List<GameObject> fallingObjects;
 
-    GameObject[,] viewGrid;
+    private GameObject[,] viewGrid;
 
     // Start is called before the first frame update
     void Start()
@@ -28,13 +28,6 @@ public class View : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
         fallingObjects = new List<GameObject>();
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
 
     #region AnimationRegion
 

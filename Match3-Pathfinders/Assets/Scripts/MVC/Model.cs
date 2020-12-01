@@ -275,41 +275,6 @@ public class Model : MonoBehaviour
         return toReturn;
     }
 
-    //public void PullDownTokens()
-    //{
-    //    for (int i = 0; i < sizeX; i++)
-    //    {
-    //        for (int j = 0; j < sizeY; j++)
-    //        {
-    //            if (grid[i, j] == -1)
-    //            {
-    //                int thisToken = grid[i, j];
-    //                int k = j;
-    //                while (thisToken == -1)
-    //                {
-    //                    k++;
-    //                    if (k == sizeY)
-    //                        break;
-    //                    thisToken = grid[i, k];
-    //                }
-
-    //                if (k == sizeY)
-    //                {
-    //                    for (k = j; k < sizeY; k++)
-    //                    {
-    //                        SetRandomGridValue(i, k);
-    //                    }
-
-    //                    continue;
-    //                }
-
-    //                grid[i, j] = grid[i, k];
-    //                grid[i, k] = -1;
-    //            }
-    //        }
-    //    }
-    //}
-
     public void GetGameObjectGridPosition(GameObject tokenGameObject, ref int x, ref int y, Vector2 offset)
     {
         Vector2 position = tokenGameObject.transform.position;
