@@ -146,9 +146,18 @@ public class Controller : MonoBehaviour
         Vector2 mousePosition2D = Vector2.zero;
         RaycastHit2D raycastHit2D = default;
 
+
+
         if (game_phase == Game_Phase.WONDERING || game_phase == Game_Phase.CHAINING)
         {
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            mousePosition = Input.touches[0].position;
+            
+#endif
+#if UNITY_EDITOR || UNITY_STANDALONE
             mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+#endif
             mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
 
             raycastHit2D = Physics2D.Raycast(mousePosition2D, Vector2.zero);

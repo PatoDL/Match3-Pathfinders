@@ -182,8 +182,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3073d59bf0efc394888a26995b21fd42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sizeX: 10
-  sizeY: 10
+  sizeX: 5
+  sizeY: 5
   selectedTokens: []
   onMouseToken: {fileID: 0}
   minTokenAmountCombination: 3
